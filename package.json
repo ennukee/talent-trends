@@ -1,0 +1,8 @@
+{
+    "name": "talent-trends",
+    "version": "0.0.1",
+    "scripts": {
+      "genData": "node .\\backend\\kron\\main.js"
+    }
+  }
+  

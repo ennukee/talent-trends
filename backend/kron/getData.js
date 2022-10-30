@@ -7,7 +7,7 @@ const { writeToFile } = require('./util/writeToFile');
 
 const base_url = 'https://www.warcraftlogs.com/api/v2/client';
 
-async function main(className, specName) {
+async function main(className, specName, encounterId) {
     const access_token = await token();
     
     const headers = {
@@ -25,14 +25,12 @@ async function main(className, specName) {
             pointsResetIn
         }
         worldData {
-            encounter(id: 2435) {
+            encounter(id: ${encounterId}) {
                 name,
                 characterRankings(includeCombatantInfo: true, className: "${className}", specName: "${specName}")
             }
         }
     }`
-
-    // console.log(gqlQuery)
 
     try {
         axios.post(base_url, {
@@ -42,8 +40,8 @@ async function main(className, specName) {
         }, headers).then(resp => {
             if (!outputGQLErrors(resp.data)) {
                 outputRateLimitData(resp.data)
-                writeToFile(resp.data)
-                handleCharacterRankings(resp.data.data.worldData.encounter.characterRankings.rankings, className, specName)
+                // writeToFile(resp.data)
+                handleCharacterRankings(resp.data.data.worldData.encounter.characterRankings.rankings, className, specName, encounterId)
             }
         })
     } catch (error) {
@@ -51,7 +49,7 @@ async function main(className, specName) {
     }
 }
 
-function handleCharacterRankings(rankingsArray, className, specName) {
+function handleCharacterRankings(rankingsArray, className, specName, encounterId) {
     const talentData = {}
     rankingsArray.forEach(rank => {
         rank.talents.forEach(talent => {
@@ -70,7 +68,7 @@ function handleCharacterRankings(rankingsArray, className, specName) {
         parses: rankingsArray.length,
         talentData,
     }
-    writeToFile(classData, `./data/${className}_${specName}.json`)
+    writeToFile(classData, `./backend/data/${encounterId}/${className.toLowerCase()}/${specName.toLowerCase()}.json`)
 }
 
 module.exports = {
